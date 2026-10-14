@@ -21,10 +21,6 @@
 
 # Bench / bring-up run records and runtime dumps: local scratch, never versioned.
 /tests/firmware/hw_probe/_status/
+/tests/brain_b/**/*.txt
 /tests/brain_b/b_loop/up/
 /tests/brain_b/b_loop/stage1_loop.js.pre*
-/tests/brain_b/*-raw.txt
-/tests/brain_b/*-result.txt
-/tests/brain_b/b_loop/*-raw.txt
-/tests/brain_b/b_loop/*-run-*.txt
-/tests/brain_b/b_loop/*-verify-*.txt

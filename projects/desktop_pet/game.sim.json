@@ -1,9 +1,0 @@
-{
-  "schema": "mosaico-game-sim/v1",
-  "tick_hz": 30,
-  "sources": [
-    "main/game_module.c",
-    "main/pet_game.c",
-    "main/pet_view.c"
-  ]
-}

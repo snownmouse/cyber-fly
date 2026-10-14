@@ -57,7 +57,6 @@ MPRC command that comes back.
 | Path | What it is |
 | --- | --- |
 | `projects/cyber_fly/` | Onboard firmware — the fly body (`main/` = 22 source files) |
-| `projects/desktop_pet/` | The fork parent that `cyber_fly` was derived from |
 | `tests/brain_b/` | The cloud brain: `stage1_loop.js`, `relay.js`, design docs, dashboards |
 | `tests/brain_c/` | Presentation and data-architecture notes |
 | `tests/firmware/hw_probe/` | Bench probe — the board facts everything else is built on |

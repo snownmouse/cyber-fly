@@ -1,6 +1,6 @@
 # ESP-Mosaico Agent Rules
 
-Select task-relevant [skills](.agents/skills/README.md) at the task level.
+Select task-relevant [skills](https://github.com/esp-mosaico/esp-mosaico-vibe/blob/main/.agents/skills/README.md) at the task level.
 User guides start at [docs](docs/README.md).
 
 Use **Vibe Mode** for ESP-Mosaico’s retained firmware and **ROM Download Mode**
@@ -21,8 +21,9 @@ AI (GPIO7) selects Vibe Mode; Boot (GPIO61) selects ROM Download Mode.
   Initialize and inspect only needed submodules, including BSP before using its examples.
 - Keep user documentation in `docs/`, indexed by `docs/README.md`; keep root
   English/Chinese READMEs aligned and short. Component API/protocol docs stay with owners.
-- Agent guidance/tools belong in `.agents/`, shared skills in version-controlled
-  `.agents/skills/`, local analysis in `.agents/analysis/`; this is not a secrecy boundary.
+- This repository ships only the Cyber-Fly work; the framework's agent guidance and
+  shared skills stay upstream in `esp-mosaico/esp-mosaico-vibe`. Load them from there
+  when a task needs framework-level guidance. This is not a secrecy boundary.
 - Inspect component source, examples and upstream docs; do not invent APIs.
 
 ## Espressif MCP services
@@ -53,10 +54,10 @@ AI (GPIO7) selects Vibe Mode; Boot (GPIO61) selects ROM Download Mode.
 - Use Python **3.10+**, target **esp32s31**, and ESP-IDF at exactly
   **`7b9cc1ac79f865983f59bb8ff3ff43eb74ff1dbe`**, not the latest `master`.
 - Before ESP-IDF work, verify the checkout with `git -C <idf-path> rev-parse HEAD`
-  and follow [build doctor/build workflow](.agents/skills/idf-low-noise-build/SKILL.md).
+  and follow [build doctor/build workflow](https://github.com/esp-mosaico/esp-mosaico-vibe/blob/main/.agents/skills/idf-low-noise-build/SKILL.md).
   Check Python, target support and application/Vibe Mode manifest constraints;
   cached paths or version numbers alone are insufficient.
-- If the pinned checkout is missing, use [environment setup](.agents/skills/espressif-env-setup/SKILL.md)
+- If the pinned checkout is missing, use [environment setup](https://github.com/esp-mosaico/esp-mosaico-vibe/blob/main/.agents/skills/espressif-env-setup/SKILL.md)
   and verify a first build. This repository authorizes that fresh installation without
   another request, overriding the skill's explicit-install trigger. Use standard paths
   when unspecified and preserve other SDK checkouts.
@@ -70,11 +71,11 @@ AI (GPIO7) selects Vibe Mode; Boot (GPIO61) selects ROM Download Mode.
   use Git to fetch and check out the selected tag and its pinned submodule commits.
 - Create apps with `python mosaico.py project init <name>` using utils' Hello World
   template; create games with `python mosaico.py game create <name> --template ...`.
-- For device UI, prefer GSP and load [mosaico-ui](.agents/skills/mosaico-ui/SKILL.md);
-  for GSP also load [gsp-sim](.agents/skills/gsp-sim/SKILL.md) for its pinned Registry
+- For device UI, prefer GSP and load [mosaico-ui](https://github.com/esp-mosaico/esp-mosaico-vibe/blob/main/.agents/skills/mosaico-ui/SKILL.md);
+  for GSP also load [gsp-sim](https://github.com/esp-mosaico/esp-mosaico-vibe/blob/main/.agents/skills/gsp-sim/SKILL.md) for its pinned Registry
   version, native C preview commands and runtime constraints.
 - For games, prefer Raylib Lite Engine and load
-  [mosaico-game-development](.agents/skills/mosaico-game-development/SKILL.md).
+  [mosaico-game-development](https://github.com/esp-mosaico/esp-mosaico-vibe/blob/main/.agents/skills/mosaico-game-development/SKILL.md).
 - Confirm unsettled UI designs before implementation, preferably with rendered mockups;
   reuse existing confirmation. Validate shared native UI/game behavior in the simulator,
   fixing and re-running affected flows before device validation. Screenshots alone
@@ -99,7 +100,7 @@ Unless the developer approves another architecture, every application must:
 
 - Treat requests to “flash/burn firmware”, “烧录”, “刷机” or “下载固件” as device
   installation/update tasks; these words do not select ROM Download Mode.
-  Before device work, load [mosaico-device-operations](.agents/skills/mosaico-device-operations/SKILL.md)
+  Before device work, load [mosaico-device-operations](https://github.com/esp-mosaico/esp-mosaico-vibe/blob/main/.agents/skills/mosaico-device-operations/SKILL.md)
   for diagnosis, update/recovery decisions, evidence checks and task-specific guides.
 - Use only `python mosaico.py` for device operations. Do not invoke `idf.py flash`,
   `idf.py app-flash`, `esptool` writes or ESP-Iris device-write commands directly,

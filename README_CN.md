@@ -53,7 +53,6 @@
 | 路径 | 内容 |
 | --- | --- |
 | `projects/cyber_fly/` | 板端固件 —— 果蝇的"身体"（`main/` 共 22 个源文件） |
-| `projects/desktop_pet/` | `cyber_fly` 分叉所自的母本工程 |
 | `tests/brain_b/` | 云端大脑：`stage1_loop.js`、`relay.js`、设计文档、看板 |
 | `tests/brain_c/` | 汇报与数据架构笔记 |
 | `tests/firmware/hw_probe/` | 板上探针固件 —— 其余一切所依据的硬件事实 |
