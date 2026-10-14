@@ -1,64 +1,95 @@
-# ESP-Mosaico Vibe
+# Cyber-Fly
 
 [English](README.md)
 
-使用 AI 编程 Agent 开发 ESP-Mosaico 应用的入门工作区。仓库提供 CLI 入口、
-工作区配置、固定版本子模块、文档和 Agent 指引。
+**把一只果蝇的"脑"搬进云服务器，用一块 ESP32 板子当它的"身体"。** 板子带真实传感器
+（麦克风 + BMI270 IMU）和真实执行器，云端跑一个果蝇连接组子回路负责"思考"——两者接成一个
+**真实的"感知 → 思考 → 行动"闭环**。不是仿真，也不是桌宠。
 
-## 创建应用
+![cyber_fly 云端连接组闭环](tests/brain_b/b_loop/cyber_fly_flow.svg)
 
-本工作区最低要求 **Python 3.10**。固件构建固定使用 ESP-IDF `master` 的
-**`7b9cc1ac79f865983f59bb8ff3ff43eb74ff1dbe`** 提交，目标为 `esp32s31`。
-系统没有 `python` 命令时，下文使用 `python3`。
+## 核心创意：生物映射
 
-```sh
-git submodule update --init submodule/esp-mosaico-utils
-python mosaico.py project init my_app
+| 真实生物结构 | 项目里的对应角色 | 说明 |
+| --- | --- | --- |
+| 感觉器官（耳 / 前庭） | 麦克风 + BMI270 IMU | 收声音（听觉）、收加速度（姿态 / 侧向） |
+| 脑干 / 脊髓（I/O 网关） | **ESP32 板子** | 读传感器、驱动执行器、做低级反射 |
+| 大脑 / 连接组 | **云端连接组仿真** | 算发放率、出行为 |
+| 运动神经 / 肌肉 | 电机、振翅、转向 | 把脑指令变成动作 |
+
+**板子不是"脑"。** 脊髓级的快速反射（比如左右平衡）留在 ESP32 本地，高层决策才上云端——
+和生物学里"脊髓反射 vs 皮层决策"的分工一致。
+
+## 闭环怎么转
+
+```
+感知    (板: 麦克风 + IMU)
+   → 手机热点            (2.4 GHz, UDP)
+   → relay.js            (UDP 中转枢纽, 端口 33333)
+   → 云端大脑            (stage1_loop.js · 6,296 神经元 v4 子回路)
+   → 行为指令            (relay 回传)
+   → 板执行              (电机 / 振翅 / 转向)
+   → 真实环境变化
+   → 再感知（闭环）
 ```
 
-命令从 utils 维护的 Hello World 模板生成 `projects/my_app`，不修改默认工程。
-`--dry-run` 不写文件，已有目标不会被覆盖。详见[工程创建](docs/project-init_CN.md)。
+板子每 50 ms 上行一帧 **68 字节 MPRB**（传感器特征），云端回一帧 **32 字节 MPRC**（行为指令），
+驱动 480×480 CO5300 屏上那只苍蝇的动作。屏幕上每个动画元素都能追溯到解码后 `fly_state_t`
+的真实字段——机身朝向来自 `turn`，振翅来自 `motor`，梳理来自 `groom`，如此类推。
 
-设备安装与维护使用 **Vibe Mode**；底层烧录使用 **ROM Download Mode**。
-两者的用途、按键和命令见[设备模式](docs/device-modes_CN.md)。
+## 现状
 
-## 预览和安装
+**真实闭环已在硬件上跑通。** 板子关联手机热点、打开 ES8311 麦克风、每 50 ms 把 MPRB 流给云端
+编排器，并渲染云端回传的 MPRC 指令。
 
-```sh
-git submodule update --init submodule/esp-mosaico-bsp
-# 激活固定提交的 ESP-IDF 环境，构建刚创建的应用。
-python submodule/esp-mosaico-utils/mosaico-tools/skills/idf-low-noise-build/scripts/idf_low_noise_build.py --project projects/my_app doctor
-python submodule/esp-mosaico-utils/mosaico-tools/skills/idf-low-noise-build/scripts/idf_low_noise_build.py --project projects/my_app build
-python mosaico.py project sim --project projects/my_app --interactive
-```
+- 上行 / 下行 `tx 9565 / rx 9512`，零坏帧，往返 **102 ms**，**27.7 fps**
+- 子回路 **v4：6,296 神经元 / 475,562 条边 / 2.82× 实时余量**
+- MPRC 解码器对云端**真实**下行流验证 —— **200/200 帧全解**，seq 0→199 连续，
+  两个篡改用例分别被 CRC 和 magic 拒绝
+- host 核心测试 **23/23 通过**；ESP 半侧 8 个 `main/` 源文件语法检查全绿
 
-GSP 预览与设备使用相同的可移植 C UI 和 GSP 1.5.1 场景。
-设计确认后，先在仿真器中发现并修复 UI 显示和交互问题，再做真机验证，
-详见[开发流程](docs/project-init_CN.md)。
-空白或未验证设备首次安装时，先执行 `python mosaico.py recover`，再执行
-`python mosaico.py iris system-update --project projects/my_app`。
-只有完整分区表和资源一致的代码更新才使用 `iris app-update`。
-设备操作统一经过产品 CLI。
+## 仓库结构
 
-## 工作区职责
-
-| 仓库 | 维护内容 |
+| 路径 | 内容 |
 | --- | --- |
-| 本工作区 | 入口、配置、Agent 工作流、消费者集成验证 |
-| [utils](https://github.com/esp-mosaico/esp-mosaico-utils) | CLI、Vibe Mode 固件、公共应用组件、Hello World 模板 |
-| [BSP](https://github.com/esp-mosaico/esp-mosaico-bsp) | 板级支持和包含游戏在内的完整示例 |
-| [Raylib Lite Engine](https://github.com/espressif2022/raylib-lite-engine) | 游戏运行时、渲染器、资源工具、Host 模拟器 |
+| `projects/cyber_fly/` | 板端固件 —— 果蝇的"身体"（`main/` 共 22 个源文件） |
+| `projects/desktop_pet/` | `cyber_fly` 分叉所自的母本工程 |
+| `tests/brain_b/` | 云端大脑：`stage1_loop.js`、`relay.js`、设计文档、看板 |
+| `tests/brain_c/` | 汇报与数据架构笔记 |
+| `tests/firmware/hw_probe/` | 板上探针固件 —— 其余一切所依据的硬件事实 |
+| `docs/hardware-interface-checklist.md` | 已核实的板级接口（SoC / I2C 地址 / codec / 上电顺序） |
 
-游戏优先使用 Raylib Lite Engine，从 BSP `examples/` 创建，先在仿真器中验证
-画面和玩法，见[游戏入口](docs/game-development_CN.md)；
-仅开发游戏时初始化引擎。生成工程使用相对引用：移动或重新克隆整个工作区，
-初始化固定依赖后重新构建。此布局不提供单应用独立导出或旧工作区路径兼容，
-见[迁移说明](docs/workspace-migration_CN.md)。
+## 快速开始
 
-共享的 [Espressif MCP 配置](docs/mcp-servers_CN.md) 为 Codex、Claude Code 和 Cursor
-接入 ESP Pilot 与 ESP Component Registry。
+需要 **Python 3.10+** 和一个 host C 编译器。
 
-从[文档索引](docs/README_CN.md)开始。Agent 遵循 [AGENTS.md](AGENTS.md) 和
-[技能索引](.agents/skills/README.md)。持续观察时，运行
-`python mosaico.py iris run --project projects/my_app`，打开输出的 Gateway Web
-工作台地址；详见 [Gateway 指南](docs/project-gateway_CN.md)。
+```sh
+# host 模拟器：用内置假下行流渲染这只苍蝇
+python mosaico.py game sim projects/cyber_fly
+
+# 刷到板子
+python mosaico.py iris system-update --project projects/cyber_fly
+```
+
+配置项、Kconfig 选项、Wi-Fi 与 IMU 的坑、以及"3 秒 ESP 语法检查"，都写在
+**[projects/cyber_fly/README.md](projects/cyber_fly/README.md)**。
+
+## 文档
+
+- [projects/cyber_fly/README.md](projects/cyber_fly/README.md) —— 固件深度解析
+- [tests/brain_b/STAGE1-SENSOR-TO-BRAIN-DESIGN.md](tests/brain_b/STAGE1-SENSOR-TO-BRAIN-DESIGN.md) —— 传感器 → 大脑 → 指令设计
+- [tests/brain_b/b_loop/cyber_fly_brief.md](tests/brain_b/b_loop/cyber_fly_brief.md) —— 项目梳理（中文）
+- [tests/brain_b/b_loop/cyber_fly_intro.html](tests/brain_b/b_loop/cyber_fly_intro.html) —— 可视化介绍
+
+## 参考
+
+云端一侧参考了 FlyWire 联盟 *Nature* 2024 的成体雌果蝇**完整连接组**，以及 Shiu、Sterne 等
+*Nature* 634:210–219 (2024) 的泄漏积分放电模型——仅凭突触连接就复现了完整的感觉→运动转换。
+本项目是同一科学原理的**功能化落地**（感官输入 → 连接组计算 → 运动输出），
+不是对全部约 14 万神经元的逐神经元仿真。
+
+## 基于
+
+板端固件与 host 模拟器运行在 **ESP-Mosaico Vibe** 工作区内（面向乐鑫 ESP32-S3 工具链：
+CLI 入口 `mosaico.py`、固定版本的 ESP-IDF、BSP 与 Raylib Lite Engine）。该框架自身的文档
+原样保留，见 [`docs/`](docs/README_CN.md) 与 [`AGENTS.md`](AGENTS.md)。

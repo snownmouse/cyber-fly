@@ -1,69 +1,102 @@
-# ESP-Mosaico Vibe
+# Cyber-Fly
 
 [简体中文](README_CN.md)
 
-A get-started workspace for developing ESP-Mosaico applications with an AI coding
-agent. The repository supplies the CLI entry, workspace settings, pinned
-submodules, documentation and Agent guidance. Applications are created on demand;
+**A fly brain in the cloud, a fly body on the bench.** An ESP32 board carries the real
+sensors (microphone + BMI270 IMU) and the real actuators; a fruit-fly connectome
+subcircuit running on a cloud server does the "thinking". The two are wired into a live
+**sense → think → act** loop — a real closed loop, not a simulation and not a desktop pet.
 
-## Create an application
+![Cyber-Fly closed-loop architecture](tests/brain_b/b_loop/cyber_fly_flow.svg)
 
-This workspace requires **Python 3.10+**. Firmware builds use ESP-IDF `master`
-at **`7b9cc1ac79f865983f59bb8ff3ff43eb74ff1dbe`** for `esp32s31`.
-Creation does not require ESP-IDF, a board, BSP or the game engine.
-Use `python3` in the commands below if your system has no `python` command.
+## The idea: a biological mapping
 
-```sh
-git submodule update --init submodule/esp-mosaico-utils
-python mosaico.py project init my_app
+| Real structure | In this project | Role |
+| --- | --- | --- |
+| Sensory organs (ear / vestibular) | Microphone + BMI270 IMU | hear sound, sense tilt and sideways acceleration |
+| Brainstem / spinal cord (I/O gateway) | **ESP32 board** | read sensors, drive actuators, run local reflexes |
+| Brain / connectome | **Cloud connectome simulation** | spiking-rate computation, behaviour output |
+| Motor neurons / muscles | Motors, wing flutter, steering | turn the brain's command into motion |
+
+The board is **not** the brain. Fast spinal-level reflexes (for example left/right balance)
+stay on the ESP32; high-level decisions go to the cloud — the same split biology makes
+between a spinal reflex and a cortical decision.
+
+## How the loop runs
+
+```
+perceive    (board: microphone + IMU)
+   → phone hotspot        (2.4 GHz, UDP)
+   → relay.js             (UDP hub, port 33333)
+   → cloud brain          (stage1_loop.js · 6,296-neuron v4 subcircuit)
+   → behaviour command    (relay, downlink)
+   → board executes       (motor / wings / steering)
+   → the world changes
+   → perceive again
 ```
 
-This creates `projects/my_app` from the utils-owned Hello World template without
-changing the default project. `--dry-run` writes nothing; existing targets are
-never overwritten. See [project creation](docs/project-init.md).
+Every 50 ms the board sends a **68-byte MPRB** feature frame up; the cloud answers with a
+**32-byte MPRC** command frame that drives the fly on the 480×480 CO5300 LCD. Every
+animated element on that screen traces back to a real decoded field — body heading from
+`turn`, wing flutter from `motor`, grooming from `groom`, and so on.
 
-Use **Vibe Mode** for device installation and maintenance, and **ROM Download Mode**
-for low-level flashing. See [device modes](docs/device-modes.md) for their purposes,
-buttons and commands.
+## Status
 
-## Preview and install
+**The real closed loop runs on hardware.** The board associates to a phone hotspot, opens
+the ES8311 microphone, streams MPRB to the cloud orchestrator every 50 ms, and renders the
+MPRC command that comes back.
 
-```sh
-git submodule update --init submodule/esp-mosaico-bsp
-# Activate the pinned ESP-IDF environment and build the generated application.
-python submodule/esp-mosaico-utils/mosaico-tools/skills/idf-low-noise-build/scripts/idf_low_noise_build.py --project projects/my_app doctor
-python submodule/esp-mosaico-utils/mosaico-tools/skills/idf-low-noise-build/scripts/idf_low_noise_build.py --project projects/my_app build
-python mosaico.py project sim --project projects/my_app --interactive
-```
+- uplink / downlink `tx 9565 / rx 9512`, zero bad frames, RTT **102 ms**, **27.7 fps**
+- subcircuit **v4: 6,296 neurons / 475,562 edges / 2.82× real-time margin**
+- MPRC decoder verified against the cloud's **real** downlink — **200/200 frames**, seq
+  0→199 continuous, two tamper tests rejected by CRC and by magic
+- host harness **23/23 pass**; ESP-half syntax check green on all 8 `main/` sources
 
-GSP preview uses the same portable C UI and GSP 1.5.1 scene as the device.
-After design confirmation, find and fix UI rendering and interaction problems
-in the simulator first, then validate on hardware; see [the workflow](docs/project-init.md).
-For the first installation on a blank or unverified board, run `python mosaico.py recover`,
-then `python mosaico.py iris system-update --project projects/my_app`.
-Use `iris app-update` only for code changes with the same complete partition table
-and resources. Device operations always go through the product CLI.
+## Repository layout
 
-## Workspace ownership
-
-| Repository | Maintains |
+| Path | What it is |
 | --- | --- |
-| This workspace | Entry, configuration, Agent workflows, consumer integration checks |
-| [utils](https://github.com/esp-mosaico/esp-mosaico-utils) | CLI, Vibe Mode firmware, shared application components and Hello World template |
-| [BSP](https://github.com/esp-mosaico/esp-mosaico-bsp) | Board support and complete examples, including games |
-| [Raylib Lite Engine](https://github.com/espressif2022/raylib-lite-engine) | Game runtime, renderer, assets and Host simulator |
+| `projects/cyber_fly/` | Onboard firmware — the fly body (`main/` = 22 source files) |
+| `projects/desktop_pet/` | The fork parent that `cyber_fly` was derived from |
+| `tests/brain_b/` | The cloud brain: `stage1_loop.js`, `relay.js`, design docs, dashboards |
+| `tests/brain_c/` | Presentation and data-architecture notes |
+| `tests/firmware/hw_probe/` | Bench probe — the board facts everything else is built on |
+| `docs/hardware-interface-checklist.md` | Verified board interface (SoC, I2C addresses, codec, power-up order) |
 
-Prefer Raylib Lite Engine for games, create from BSP `examples/`, and validate
-visuals and gameplay in its simulator first; see the [game entry](docs/game-development.md).
-Initialize the engine only when developing games. Generated applications use
-relative references: move or clone the whole workspace, initialize its pinned
-dependencies and rebuild. Single-application export and old workspace path
-compatibility are outside this layout. See [migration notes](docs/workspace-migration.md).
+## Quick start
 
-Shared [Espressif MCP configuration](docs/mcp-servers.md) connects Codex, Claude Code
-and Cursor to ESP Pilot and the ESP Component Registry.
+Requires **Python 3.10+** and a host C compiler.
 
-Start with the [documentation index](docs/README.md). Agents follow [AGENTS.md](AGENTS.md)
-and the [skill index](.agents/skills/README.md). For ongoing observation,
-`python mosaico.py iris run --project projects/my_app` prints the Gateway Web
-workbench URL; see the [Gateway guide](docs/project-gateway.md).
+```sh
+# host simulator: renders the fly from the built-in fake downlink
+python mosaico.py game sim projects/cyber_fly
+
+# flash to the board
+python mosaico.py iris system-update --project projects/cyber_fly
+```
+
+Configuration, the Kconfig options, the Wi-Fi and IMU traps, and the 3-second ESP syntax
+check are all documented in **[projects/cyber_fly/README.md](projects/cyber_fly/README.md)**.
+
+## Documentation
+
+- [projects/cyber_fly/README.md](projects/cyber_fly/README.md) — firmware deep dive
+- [tests/brain_b/STAGE1-SENSOR-TO-BRAIN-DESIGN.md](tests/brain_b/STAGE1-SENSOR-TO-BRAIN-DESIGN.md) — sensor → brain → command design
+- [tests/brain_b/b_loop/cyber_fly_brief.md](tests/brain_b/b_loop/cyber_fly_brief.md) — project walkthrough (中文)
+- [tests/brain_b/b_loop/cyber_fly_intro.html](tests/brain_b/b_loop/cyber_fly_intro.html) — visual introduction
+
+## Background
+
+The cloud side is inspired by the FlyWire consortium's *Nature* 2024 full adult fruit-fly
+connectome and by Shiu, Sterne et al., *Nature* 634:210–219 (2024) — a leaky
+integrate-and-fire model that reproduces the complete sensory-to-motor transform from
+synaptic connectivity alone. This project is a **functional** realisation of the same
+principle (sensory input → connectome computation → motor output), not a per-neuron
+simulation of all ~140,000 cells.
+
+## Built on
+
+The board firmware and host simulator run inside the **ESP-Mosaico Vibe** workspace for the
+Espressif ESP32-S3 toolchain (CLI entry `mosaico.py`, pinned ESP-IDF, BSP and the Raylib
+Lite Engine). That framework's own documentation is unchanged and lives in
+[`docs/`](docs/README.md) and [`AGENTS.md`](AGENTS.md).
