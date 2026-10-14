@@ -1,0 +1,129 @@
+menu "HW Probe (task A: board / microphone / UDP link)"
+
+    menu "Wi-Fi station"
+
+        config HW_PROBE_WIFI_SSID
+            string "Wi-Fi SSID"
+            default ""
+            help
+                SSID of the 2.4 GHz access point the probe joins. ESP32-S31 has a
+                2.4 GHz-only radio, so a 5 GHz-only SSID will not be visible.
+
+        config HW_PROBE_WIFI_PASSWORD
+            string "Wi-Fi password"
+            default ""
+            help
+                Left empty for an open network.
+
+        config HW_PROBE_WIFI_MAX_RETRY
+            int "Maximum reconnect attempts"
+            range 1 20
+            default 5
+
+        config HW_PROBE_WIFI_TIMEOUT_SEC
+            int "Seconds to wait for an IP address"
+            range 5 120
+            default 20
+
+    endmenu
+
+    menu "UDP probe target"
+
+        config HW_PROBE_SERVER_IP
+            string "Server IPv4 address"
+            default "192.168.1.100"
+            help
+                Address of the machine running tools/udp_probe_server.py. Use the
+                LAN address of the cloud or local host, not 127.0.0.1.
+
+        config HW_PROBE_SERVER_PORT
+            int "Server UDP port"
+            range 1024 65535
+            default 33333
+
+    endmenu
+
+    menu "Microphone noise floor"
+
+        config HW_PROBE_MIC_ENABLE
+            bool "Run microphone noise-floor probe"
+            default y
+
+        config HW_PROBE_MIC_GAIN_DB
+            int "Capture gain (dB)"
+            range 0 60
+            default 30
+            help
+                Gain used for the noise-floor measurement and the steady UDP
+                stream. The gain scan overwrites this value while it runs and
+                restores it afterwards.
+
+        config HW_PROBE_MIC_CAPTURE_SEC
+            int "Capture window (seconds)"
+            range 1 30
+            default 5
+            help
+                Measure the floor in a quiet room with the board sitting still.
+
+        config HW_PROBE_MIC_GAIN_SCAN
+            bool "Sweep gain 0..50 dB and recommend a value"
+            default y
+
+    endmenu
+
+    menu "On-board sensor self-check"
+
+        config HW_PROBE_IMU_ENABLE
+            bool "Verify BMI270 at I2C address 0x69"
+            default y
+            help
+                Regression check for the address correction recorded in the
+                hardware interface checklist: BMI270 answers at 0x69 on this
+                board, not the datasheet default 0x68.
+
+    endmenu
+
+    menu "UDP link quality"
+
+        config HW_PROBE_UDP_BURST_COUNT
+            int "Burst packet count"
+            range 10 10000
+            default 1000
+
+        config HW_PROBE_UDP_BURST_INTERVAL_US
+            int "Burst inter-packet gap (us)"
+            range 0 20000
+            default 1000
+            help
+                0 sends as fast as the stack allows, which mostly measures local
+                buffering. 1000 us (1000 pps) is gentle enough that the figure
+                reflects the real radio link.
+
+        config HW_PROBE_UDP_STREAM_SEC
+            int "Steady-stream duration (seconds)"
+            range 2 300
+            default 20
+
+        config HW_PROBE_UDP_STREAM_HZ
+            int "Steady-stream frame rate (Hz)"
+            range 1 50
+            default 20
+            help
+                20 Hz matches the 50 ms feature-frame cadence planned for the
+                closed loop.
+
+        config HW_PROBE_UDP_ACK_TIMEOUT_MS
+            int "ACK wait after the last packet (ms)"
+            range 100 5000
+            default 1500
+
+    endmenu
+
+    config HW_PROBE_CONTINUOUS_STREAM
+        bool "Keep streaming feature frames after the report"
+        default n
+        help
+            Streams at the configured rate so link quality can be watched over a
+            longer window. Leave off for a one-shot measurement.
+
+endmenu

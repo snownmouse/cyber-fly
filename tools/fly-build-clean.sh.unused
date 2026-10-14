@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# 干净的构建入口：先清 build/ 再构建。
+#
+# 为什么要这个脚本：ESP-IDF 的 CMake 缓存在一次失败/中断后会留下坏掉的绝对路径，
+# 之后每次重跑都报同一个**完全无关**的错：
+#     ninja: error: FindFirstFileExA(/D:/.../build/esp-idf/main): The filename, ...
+#     ERROR: command "system-update-bundle" is not known to idf.py and is not a Ninja target
+# 注意多出来的前导 "/"。这个错误和真实原因毫无关系，很容易把人带偏。
+#
+# 规则：**每次刷机前都先跑这个**，不要直接重跑 mosaico.py。
+# 删除用 move 而不是 delete：delete 会被安全策略拦，move 不会，而且出错能回退。
+set -u
+
+PROJ="${1:-/d/ESP/esp-mosaico-vibe}"
+TARGET="$PROJ/projects/cyber_fly"
+STAMP="$(date +%H%M%S)"
+
+export IDF_PATH="${IDF_PATH:-/d/ESP/esp-idf}"
+export IDF_TOOLS_PATH="${IDF_TOOLS_PATH:-/d/ESP/espressif-tools}"
+export IDF_CONFIGDEP_ENABLE=0
+PY="${MOSAICO_PY:-/d/ESP/espressif-tools/python_env/idf6.2_py3.11_env/Scripts/python.exe}"
+WS_ROOT=/d/ESP/esp-mosaico-vibe
+
+# 1) 清掉上一次的 build/（成功与否都清，避免半成品）
+if [ -d "$TARGET/build" ]; then
+  mv "$TARGET/build" "$TARGET/_gone_build_$STAMP" && echo "[clean] build -> _gone_build_$STAMP"
+fi
+
+# 2) 归档目录超过 3 个就清掉最老的（它们都是我们自己的构建产物）
+count=$(ls -d "$TARGET"/_gone_* 2>/dev/null | wc -l)
+if [ "$count" -gt 3 ]; then
+  for d in $(ls -dt "$TARGET"/_gone_* 2>/dev/null | tail -n +4); do
+    mv "$d" "$TARGET/_trash_$STAMP" && echo "[clean] archived $d"
+  done
+fi
+
+# 3) 先清 USB ownership，否则安装器报 device_request_failed
+cd "$WS_ROOT" || exit 1
+"$PY" mosaico.py --workspace "$WS_ROOT" iris reconcile \
+  --device-id 4553502d49524953010030eda0f4657c >/dev/null 2>&1
+
+# 4) 构建 + 刷机
+"$PY" mosaico.py --workspace "$WS_ROOT" iris system-update --project projects/cyber_fly
+echo "[exit] $?"

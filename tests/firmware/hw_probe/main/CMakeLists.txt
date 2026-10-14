@@ -1,0 +1,22 @@
+idf_component_register(
+    SRCS
+        "main.c"
+        "probe_common.c"
+        "board_probe.c"
+        "mic_probe.c"
+        "wifi_sta.c"
+        "udp_probe.c"
+    INCLUDE_DIRS "."
+    REQUIRES
+        esp-mosaico-bsp
+        esp_mosaico_app_recovery
+        esp_iris
+        freertos
+        lvgl__lvgl
+        nvs_flash
+        esp_wifi
+        esp_netif
+        esp_psram
+        lwip
+        esp_timer
+)

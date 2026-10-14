@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>果蝇脑启发的闭环智能 · 科普展示</title>
+<style>
+  :root{
+    --bg:#f5f8fc; --card:#ffffff; --ink:#1f2a37; --sub:#5b6675;
+    --sensor:#fef3c7; --sensorB:#d97706;
+    --edge:#dbeafe;   --edgeB:#2563eb;
+    --relay:#e0e7ff;  --relayB:#4f46e5;
+    --brain:#dcfce7;  --brainB:#16a34a;
+    --diag:#fae8ff;   --diagB:#a21caf;
+    --dash:#ffe4e6;   --dashB:#e11d48;
+    --loop:#0ea5e9;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.65}
+  .wrap{max-width:1080px;margin:0 auto;padding:36px 22px 64px}
+
+  /* hero */
+  .hero{background:linear-gradient(135deg,#0ea5e9,#4f46e5);color:#fff;border-radius:18px;
+        padding:34px 34px;margin-bottom:24px;box-shadow:0 8px 24px rgba(30,58,138,.18)}
+  .hero h1{font-size:30px;margin:0 0 10px;letter-spacing:.5px}
+  .hero p{margin:0;font-size:15.5px;opacity:.95;max-width:760px}
+  .hero .pill{display:inline-block;margin-top:16px;background:rgba(255,255,255,.18);
+              border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:6px 14px;font-size:13px}
+
+  .sec{margin:30px 0 8px}
+  .sec h2{font-size:21px;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+  .sec .bar{width:5px;height:22px;background:linear-gradient(#0ea5e9,#4f46e5);border-radius:3px}
+  .sec .desc{color:var(--sub);font-size:14px;margin:0 0 14px}
+
+  .card{background:var(--card);border:1px solid #e5e9f0;border-radius:14px;
+        padding:20px 22px;box-shadow:0 1px 3px rgba(20,30,50,.05)}
+  svg{width:100%;height:auto;display:block}
+
+  /* principle / project grid */
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .pcard{border:1px solid #e7ebf2;border-radius:12px;padding:14px 16px;background:#fbfdff}
+  .pcard h3{margin:0 0 6px;font-size:15.5px;color:#0f3a66}
+  .pcard p{margin:0;font-size:13.5px;color:var(--sub)}
+  .pcard .tag{display:inline-block;font-size:11px;color:#fff;background:#0ea5e9;border-radius:6px;
+              padding:1px 7px;margin-bottom:7px;font-weight:600}
+
+  ol.ref{font-size:13.5px;line-height:1.95;margin:0;padding-left:22px;color:#334155}
+  ol.ref a{color:#2563eb}
+  .foot{color:var(--sub);font-size:13px;margin-top:12px;border-top:1px dashed #dfe5ee;padding-top:12px}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px}
+  .legend span{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--sub)}
+  .sw{width:16px;height:16px;border-radius:4px;display:inline-block;border:2px solid}
+
+  @media (max-width:720px){.grid{grid-template-columns:1fr}.hero h1{font-size:24px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== HERO ===== -->
+  <div class="hero">
+    <h1>果蝇脑启发的闭环智能</h1>
+    <p>一只果蝇如何在约 100 毫秒内"感知危险 → 中枢决策 → 转身逃走"？本项目以 2024 年发表的果蝇全脑连接组为灵感，
+       用一套"边缘感知执行 + 云端连接组大脑"的闭环架构，把昆虫的神经原理工程化为可演示的系统。下面用一页讲清：核心原理、系统流程、参考项目与文献。</p>
+    <span class="pill">连接组学 · 分层脑模型 · 闭环感觉运动控制 · 果蝇全脑连接组（Nature 2024）</span>
+  </div>
+
+  <!-- ===== 核心原理 ===== -->
+  <div class="sec">
+    <h2><span class="bar"></span>核心原理</h2>
+    <p class="desc">支撑这套系统的六个神经科学 / 控制理论概念（均为公开科学原理，非逐神经元复刻）。</p>
+  </div>
+  <div class="card">
+    <div class="grid">
+      <div class="pcard"><span class="tag">连接组学</span><h3>脑是一张"接线图"</h3>
+        <p>连接组学研究神经元之间的连接（突触）。2024 年果蝇全脑连接组给出约 13.9 万神经元、约 5000 万突触的完整接线图；系统以"功能区 + 行为指令"做功能级近似。</p></div>
+      <div class="pcard"><span class="tag">分层脑模型</span><h3>外周—脑干—中枢</h3>
+        <p>生物上感觉与运动在外周/低级中枢，复杂决策在高级中枢。系统把采集与执行下沉到边缘端（脑干/脊髓层），把决策放到云端（中枢），各司其职。</p></div>
+      <div class="pcard"><span class="tag">命令神经元</span><h3>一小群细胞决定"逃不逃"</h3>
+        <p>生物中少数命令神经元把"逃逸/转向"等离散决策变成下行指令驱动肌肉。系统中对应为行为指令信号（逃逸/转向/梳理/进食）。</p></div>
+      <div class="pcard"><span class="tag">发放率 + 低通</span><h3>用"放电频率"表达活动</h3>
+        <p>神经活动常用放电频率（发放率）编码；再用简单低通（状态估计）平滑传感噪声与行为抖动，得到稳定的激活水平。</p></div>
+      <div class="pcard"><span class="tag">闭环控制</span><h3>感知→动作→反馈→再感知</h3>
+        <p>真正的智能是闭环的：中枢下达指令，身体执行，环境变化再被感知。系统的下行指令驱动执行器，完成"身体—环境"闭环。</p></div>
+      <div class="pcard"><span class="tag">生物原型</span><h3>中央复合体 / 蘑菇体</h3>
+        <p>果蝇的中央复合体主管导航定向，蘑菇体主管学习记忆——是"行为选择"与"记忆"的生物原型，作为功能区设计的灵感来源。</p></div>
+    </div>
+  </div>
+
+  <!-- ===== 系统架构流程图 ===== -->
+  <div class="sec">
+    <h2><span class="bar"></span>系统如何工作（闭环流程图）</h2>
+    <p class="desc">从"外周感觉"到"中枢决策"再到"网页可视化"，并用下行指令闭合回到执行器。蓝线为闭环。</p>
+  </div>
+  <div class="card">
+    <svg viewBox="0 0 1000 760" role="img" aria-label="果蝇脑启发的闭环系统架构图">
+      <defs>
+        <marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#334155"/>
+        </marker>
+        <marker id="arl" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#0ea5e9"/>
+        </marker>
+        <style>
+          .box{rx:12;ry:12;stroke-width:2.5}
+          .t{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#1f2a37}
+          .tt{font-size:15px;font-weight:700}
+          .ts{font-size:11.5px;fill:#475569}
+          .lab{font-size:12px;fill:#334155;font-weight:600}
+          .edge{stroke:#334155;stroke-width:2;fill:none}
+          .loop{stroke:#0ea5e9;stroke-width:2.5;fill:none;stroke-dasharray:7 5}
+        </style>
+      </defs>
+
+      <!-- Sensors -->
+      <g>
+        <rect class="box" x="60"  y="30" width="260" height="64" fill="#fef3c7" stroke="#d97706"/>
+        <text class="t tt" x="190" y="58" text-anchor="middle">听觉输入（麦克风）</text>
+        <text class="t ts" x="190" y="78" text-anchor="middle">声音 / 巨响 / 语音</text>
+
+        <rect class="box" x="370" y="30" width="260" height="64" fill="#fef3c7" stroke="#d97706"/>
+        <text class="t tt" x="500" y="58" text-anchor="middle">运动 / 姿态（IMU）</text>
+        <text class="t ts" x="500" y="78" text-anchor="middle">加速度 / 角速度</text>
+
+        <rect class="box" x="680" y="30" width="260" height="64" fill="#fef3c7" stroke="#d97706"/>
+        <text class="t tt" x="810" y="58" text-anchor="middle">环境感觉</text>
+        <text class="t ts" x="810" y="78" text-anchor="middle">光 / 温湿度等</text>
+      </g>
+
+      <!-- Edge controller -->
+      <rect class="box" x="340" y="150" width="320" height="88" fill="#dbeafe" stroke="#2563eb"/>
+      <text class="t tt" x="500" y="182" text-anchor="middle">边缘控制器 — 脑干 / 脊髓层</text>
+      <text class="t ts" x="500" y="204" text-anchor="middle">采集外周感觉 → 上行传输</text>
+      <text class="t ts" x="500" y="222" text-anchor="middle">接收指令 → 驱动执行器（振翅 / 转向）</text>
+
+      <!-- relay -->
+      <rect class="box" x="340" y="296" width="320" height="72" fill="#e0e7ff" stroke="#4f46e5"/>
+      <text class="t tt" x="500" y="324" text-anchor="middle">网络中继 — 上行汇聚</text>
+      <text class="t ts" x="500" y="345" text-anchor="middle">感知数据入 → 分发给大脑与诊断</text>
+      <text class="t ts" x="500" y="362" text-anchor="middle">（类比轴突分支：一入多出）</text>
+
+      <!-- brain -->
+      <rect class="box" x="50" y="440" width="400" height="118" fill="#dcfce7" stroke="#16a34a"/>
+      <text class="t tt" x="250" y="468" text-anchor="middle">连接组大脑（中枢决策）</text>
+      <text class="t ts" x="68" y="490">行为判定 → 生成下行指令</text>
+      <text class="t ts" x="68" y="510">全脑活动采样 → 9 大功能区发放率</text>
+      <text class="t ts" x="68" y="530">逃逸 / 转向 / 梳理 / 进食等行为</text>
+      <text class="t ts" x="68" y="550">（果蝇全脑连接组启发）</text>
+
+      <!-- diagnosis -->
+      <rect class="box" x="550" y="440" width="400" height="118" fill="#fae8ff" stroke="#a21caf"/>
+      <text class="t tt" x="750" y="468" text-anchor="middle">感觉 / 运动诊断</text>
+      <text class="t ts" x="568" y="490">声压评估（响度 / 频段）</text>
+      <text class="t ts" x="568" y="510">运动学评估（侧向 / 起始 / 门限）</text>
+      <text class="t ts" x="568" y="530">信号健康监控</text>
+      <text class="t ts" x="568" y="550">（类比感觉门控 / 注意力）</text>
+
+      <!-- dashboard -->
+      <rect class="box" x="50" y="618" width="900" height="120" fill="#ffe4e6" stroke="#e11d48"/>
+      <text class="t tt" x="500" y="646" text-anchor="middle">可视化看板（网页）</text>
+      <text class="t ts" x="70" y="672">数据汇报：行为状态 / 逃逸强度 / 转向 / 振翅</text>
+      <text class="t ts" x="70" y="694">脑区神经图：9 大功能区按激活上色，激活时发光</text>
+      <text class="t ts" x="70" y="716">神经活动曲线 + 上行特征（听觉 / 运动 / 侧向 / 起始 / 门限）</text>
+
+      <!-- arrows -->
+      <path class="edge" marker-end="url(#ar)" d="M190,94 L190,146"/>
+      <path class="edge" marker-end="url(#ar)" d="M500,94 L500,146"/>
+      <path class="edge" marker-end="url(#ar)" d="M810,94 L810,146"/>
+      <text class="lab" x="500" y="124" text-anchor="middle">外周感觉上行</text>
+
+      <path class="edge" marker-end="url(#ar)" d="M500,238 L500,292"/>
+      <text class="lab" x="512" y="270" text-anchor="start">上行传输</text>
+
+      <path class="edge" marker-end="url(#ar)" d="M400,368 C320,404 300,414 270,436"/>
+      <text class="lab" x="318" y="400" text-anchor="middle">数据 → 大脑</text>
+      <path class="edge" marker-end="url(#ar)" d="M600,368 C690,404 700,414 740,436"/>
+      <text class="lab" x="690" y="400" text-anchor="middle">数据 → 诊断</text>
+
+      <path class="edge" marker-end="url(#ar)" d="M250,558 L250,614"/>
+      <text class="lab" x="262" y="592" text-anchor="start">数据汇集</text>
+      <path class="edge" marker-end="url(#ar)" d="M750,558 L750,614"/>
+      <text class="lab" x="762" y="592" text-anchor="start">数据汇集</text>
+
+      <!-- closed loop -->
+      <path class="loop" marker-end="url(#arl)" d="M50,500 C20,430 20,330 320,240"/>
+      <text class="lab" x="40" y="400" fill="#0ea5e9">下行指令</text>
+      <text class="lab" x="40" y="418" fill="#0ea5e9">（逃逸 / 转向 / …）</text>
+
+      <path class="loop" marker-end="url(#arl)" d="M660,194 C820,150 900,110 820,94"/>
+      <text class="lab" x="800" y="138" fill="#0ea5e9">执行 → 行为 → 环境反馈</text>
+    </svg>
+
+    <div class="legend">
+      <span><i class="sw" style="background:#fef3c7;border-color:#d97706"></i>外周感觉</span>
+      <span><i class="sw" style="background:#dbeafe;border-color:#2563eb"></i>边缘控制器（脑干/脊髓层）</span>
+      <span><i class="sw" style="background:#e0e7ff;border-color:#4f46e5"></i>网络中继</span>
+      <span><i class="sw" style="background:#dcfce7;border-color:#16a34a"></i>连接组大脑（中枢）</span>
+      <span><i class="sw" style="background:#fae8ff;border-color:#a21caf"></i>感觉/运动诊断</span>
+      <span><i class="sw" style="background:#ffe4e6;border-color:#e11d48"></i>可视化看板</span>
+      <span><i class="sw" style="background:#fff;border-color:#0ea5e9"></i>蓝线 = 闭环（下行指令 / 行为反馈）</span>
+    </div>
+  </div>
+
+  <!-- ===== 本项目（占位，待补链接） ===== -->
+  <div class="sec">
+    <h2><span class="bar"></span>本项目</h2>
+    <p class="desc">下面这项是本次展示所介绍的系统本身；链接 / 仓库地址由你稍后补充。</p>
+  </div>
+  <div class="card">
+    <div class="grid">
+      <div class="pcard full"><span class="tag" style="background:#e11d48">本项目</span><h3>Cyber-Fly · 果蝇脑启发的闭环控制系统</h3>
+        <p>本项目：以 2024 果蝇全脑连接组为灵感，用"边缘感知执行 + 云端连接组大脑"实现感知→决策→执行→反馈的闭环。详见本页上方「核心原理」与「系统流程图」。<br>
+        <b style="color:#be123c">项目主页 / 仓库地址：待补充（请在此填入链接）</b></p></div>
+    </div>
+  </div>
+
+  <!-- ===== 参考项目 ===== -->
+  <div class="sec">
+    <h2><span class="bar"></span>参考项目（真实存在、可对标）</h2>
+    <p class="desc">这些公开项目与成果，是"用工程复现昆虫神经原理"这一思路的现实依据。</p>
+  </div>
+  <div class="card">
+    <div class="grid">
+      <div class="pcard"><span class="tag">连接组平台</span><h3>FlyWire 全脑连接组</h3>
+        <p>Princeton（Seung 组）+ Janelia（Murthy、Bock）联合重建的果蝇全脑连接组平台，可交互浏览约 13.9 万神经元接线——本系统"连接组大脑"概念的直接来源。</p></div>
+      <div class="pcard"><span class="tag">部分连接组</span><h3>hemibrain</h3>
+        <p>Janelia（Scheffer 等，2020）里程碑式的果蝇中枢脑部分连接组（约 2.5 万神经元），neuPrint 可在线浏览，是连接组研究的工程基础。</p></div>
+      <div class="pcard"><span class="tag">仿生飞行</span><h3>DelFly Nimble</h3>
+        <p>TU Delft MAVLab 的果蝇启发扑翼机器人，研究果蝇"逃逸机动"（倾斜转弯）的敏捷飞行，证明昆虫逃逸控制可被工程复现。</p></div>
+      <div class="pcard"><span class="tag">微飞行机器人</span><h3>RoboBee</h3>
+        <p>Harvard（Wood 组）的昆虫尺度微飞行机器人（约 80 mg，Science 2013），微尺度飞行与驱动的代表性成果。</p></div>
+      <div class="pcard"><span class="tag">脑—体闭环</span><h3>DragonflEye</h3>
+        <p>Draper + HHMI 用光遗传学直接驱动活体蜻蜓飞行，是"脑—机—生物体"闭环控制的极端例子。</p></div>
+      <div class="pcard"><span class="tag">数据 / 工具</span><h3>neuPrint · VFB · FlyBase</h3>
+        <p>连接组浏览器与果蝇神经解剖 / 基因数据库，做生物映射与原理查证时的权威公开来源。</p></div>
+      <div class="pcard"><span class="tag">GitHub · 本系统引擎</span><h3>flywire-fly-lab（suifei/flywire-fly-lab）</h3>
+        <p>对 <strong>FlyWire 2024 果蝇全脑连接组</strong> 的工程复现（Shiu/Sterne 全脑 LIF 模型）：含实时仿真引擎 <code>dodge/brain.js</code>、子回路提取、刺激编码与读出。本系统云端"连接组大脑"即运行其 <strong>v4 子回路（6,296 神经元 / 475,562 突触）</strong>——真实连接组接线，非手写近似。<br>
+        <b style="color:#0f3a66">GitHub：</b><a href="https://github.com/suifei/flywire-fly-lab" target="_blank">github.com/suifei/flywire-fly-lab</a><br>
+        <b style="color:#b45309">许可：</b>GPL-3.0（代码）＋ CC BY-NC 4.0（连接组数据，<b>禁止商用</b>）——对外发布或商用前请先确认授权。</p></div>
+    </div>
+  </div>
+
+  <!-- ===== 参考文献 ===== -->
+  <div class="sec">
+    <h2><span class="bar"></span>参考文献</h2>
+    <p class="desc">连接组、仿生飞行与昆虫神经行为领域的代表性文献，供进一步查阅。</p>
+  </div>
+  <div class="card">
+    <ol class="ref">
+      <li>Dorkenwald S., Matsliah A., Sterling A. R., Schlegel P., Yu S., McKellar C. E., … (The FlyWire Consortium), Seung H. S., Murthy M. <em>“Neuronal wiring diagram of an adult brain.”</em> <strong>Nature</strong> 634, 124–138 (2024). DOI: <a href="https://doi.org/10.1038/s41586-024-07558-y" target="_blank">10.1038/s41586-024-07558-y</a>.</li>
+      <li>Scheffer L. K., et al. <em>“A connectome and analysis of the adult Drosophila central brain.”</em> <strong>eLife</strong> 9:e57443 (2020).（hemibrain 部分连接组）</li>
+      <li>Winding M., Pedigo B. D., et al. <em>“The connectome of the larval Drosophila brain.”</em> <strong>Science</strong> 375:eabm9287 (2022).（幼虫全脑连接组）</li>
+      <li>Karásek M., Muijres F. T., de Croon G. C. H. <em>“A tailless aerial robotic flapping flyer that can transition from hovering to fast forward flight.”</em> <strong>Science</strong> 361, 1089–1094 (2018).（DelFly Nimble）</li>
+      <li>Ma K. Y., Chirarattananon P., Fuller S. B., Wood R. J. <em>“Controlled flight of a biologically inspired, insect-scale robot.”</em> <strong>Science</strong> 340, 603–607 (2013).（RoboBee）</li>
+      <li>Card G. M. <em>“Escape behaviors in insects.”</em> <strong>Current Opinion in Neurobiology</strong> 22(2):200–207 (2012).（昆虫逃逸行为综述）</li>
+      <li>Hulse B. K., Haberkern H., Franconville R., et al. <em>“A connectome of the Drosophila central complex reveals functionally distinct circuits for innate and learned visuomotor behaviors.”</em> <strong>eLife</strong> (2021).（导航 / 定向回路）</li>
+    </ol>
+    <p class="foot">主参考（条目 1）为 2024 年发表的果蝇全脑连接组：全脑 139,255 个神经元、约 5×10⁷ 个化学突触的完整接线图。本展示中的"9 大功能区 / 行为指令"是受该连接组启发的功能级近似，用于科普与原理演示，并非逐神经元复刻。</p>
+  </div>
+
+</div>
+</body>
+</html>

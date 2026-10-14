@@ -1,0 +1,83 @@
+CONFIG_IDF_TARGET="esp32s31"
+CONFIG_IDF_EXPERIMENTAL_FEATURES=y
+CONFIG_COMPILER_OPTIMIZATION_PERF=y
+
+CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+# Persist ESP-IDF Core Dumps and the bounded ESP-Iris pre-crash log ring in
+# the retained coredump partition after a panic.
+CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH=y
+CONFIG_APP_RETRIEVE_LEN_ELF_SHA=64
+CONFIG_ESP_IRIS_NVS_PARTITION_NAME="sysmeta"
+CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y
+CONFIG_FACTORY_RECOVERY_BOOT_GPIO=7
+CONFIG_FACTORY_RECOVERY_BOOT_DEBOUNCE_MS=50
+
+# USB High-Speed is owned by ESP-Iris. Device installation and logs go through
+# the repository's mosaico.py commands. Keep the console on UART and avoid the
+# built-in USB Serial/JTAG controller.
+CONFIG_ESP_CONSOLE_UART_DEFAULT=y
+# CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG is not set
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+CONFIG_ESP_IRIS_TRANSPORT_USB=y
+CONFIG_ESP_IRIS_TRANSPORT_TCP=y
+CONFIG_ESP_IRIS_TRANSPORT_CLAIM_TIMEOUT_MS=2000
+CONFIG_ESP_IRIS_TCP_PORT=19772
+CONFIG_ESP_IRIS_TCP_PAIRING=y
+CONFIG_ESP_IRIS_TCP_DEFER_UNTIL_NETIF=y
+CONFIG_ESP_IRIS_TASK_STACK_SIZE=3328
+CONFIG_ESP_IRIS_USB_TASK_STACK_SIZE=2048
+CONFIG_ESP_IRIS_SERVICE_STACK_SIZE=4096
+CONFIG_ESP_IRIS_SERVICE_PERSISTENT=y
+CONFIG_ESP_IRIS_SERVICE_CONTEXT_PSRAM=y
+CONFIG_ESP_IRIS_SERVICE_STATE_PSRAM=y
+CONFIG_ESP_IRIS_RPC_RESPONSE_PSRAM=y
+CONFIG_ESP_IRIS_WIRE_BUFFERS_PSRAM=y
+CONFIG_ESP_IRIS_LOG_RING_BYTES=4096
+CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY=y
+CONFIG_ESP_IRIS_LOG_RING_STORAGE_PSRAM=y
+# ESP-Iris assembles a wire frame in its own 4096-byte buffer. CDC can feed
+# and drain it in chunks; keep RX >= endpoint capacity.
+CONFIG_TINYUSB_CDC_RX_BUFSIZE=1024
+CONFIG_TINYUSB_CDC_TX_BUFSIZE=1024
+CONFIG_TINYUSB_CDC_EP_BUFSIZE=512
+
+# ESP-Mosaico 480x480 CO5300 QSPI display and LVGL. Task A never touches the
+# panel, but the BSP display path stays enabled so task C needs no config change.
+CONFIG_BSP_CO5300_ENABLE_TE=y
+CONFIG_LV_CONF_SKIP=y
+CONFIG_LV_COLOR_DEPTH_16=y
+CONFIG_LV_OS_FREERTOS=y
+CONFIG_LV_DEF_REFR_PERIOD=15
+CONFIG_LV_DPI_DEF=60
+CONFIG_LV_USE_CLIB_MALLOC=y
+CONFIG_LV_USE_CLIB_STRING=y
+CONFIG_LV_USE_CLIB_SPRINTF=y
+CONFIG_LV_FONT_MONTSERRAT_48=y
+
+# Display frame buffers are allocated in PSRAM by esp_lvgl_adapter.
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_SPEED_250M=y
+CONFIG_SPIRAM_XIP_FROM_PSRAM=y
+CONFIG_SPIRAM_MEMTEST=n
+
+# --- hw_probe specific -------------------------------------------------------
+# UDP loss and jitter figures are only meaningful with modem power save off.
+# The firmware calls esp_wifi_set_ps(WIFI_PS_NONE); these keep the driver side
+# aligned with that intent so the burst test is not throttled by the AP path.
+CONFIG_ESP_WIFI_STATIC_RX_BUFFER_NUM=16
+CONFIG_ESP_WIFI_DYNAMIC_RX_BUFFER_NUM=64
+
+CONFIG_APP_PROJECT_VER_FROM_CONFIG=y
+CONFIG_APP_PROJECT_VER="1.0.0"
+
+# --- Task A observation mode (song capture) ------------------------------
+# Keep the boot-time steady stream SHORT: it runs before iris_ota_support_start(),
+# and the installer only waits ~45 s for the app to report healthy. A long boot
+# stream makes the install look unhealthy and the board falls back to Recovery.
+CONFIG_HW_PROBE_UDP_STREAM_SEC=5
+# After the boot report, stream 10 s windows forever so an operator can play a
+# song and capture it without racing a deadline.
+CONFIG_HW_PROBE_CONTINUOUS_STREAM=y

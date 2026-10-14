@@ -1,0 +1,105 @@
+menu "Cyber Fly brain downlink"
+
+config FLY_LINK_ENABLE
+    bool "Receive real MPRC brain frames from the cloud"
+    default y
+    help
+        Off = the board animates from the built-in fake generator only
+        (useful when there is no cloud reachable). On = the board keeps a UDP
+        socket open, emits a 68 B MPRB feature frame every 50 ms, and feeds
+        every MPRC reply into fly_state_decode().
+
+        The board is behind a phone-hotspot NAT, so the cloud never connects
+        to us: stage1_loop.js answers each MPRB with an MPRC sent straight back
+        to the sender's observed address:port. Our own 20 Hz upstream traffic is
+        what keeps the NAT mapping open.
+
+config FLY_LINK_HOST
+    string "Cloud orchestrator IPv4 (dotted quad)"
+    default "192.168.1.100"
+    depends on FLY_LINK_ENABLE
+    help
+        The default is a placeholder on purpose: point it at your own cloud
+        orchestrator with `idf.py menuconfig` (or edit sdkconfig). A literal
+        address, not a hostname, on purpose: lwIP DNS would add a blocking
+        resolver call to the link task's first send.
+
+config FLY_LINK_PORT
+    int "Cloud orchestrator UDP port"
+    range 1 65535
+    default 33333
+    depends on FLY_LINK_ENABLE
+
+config FLY_WIFI_SSID
+    string "Wi-Fi SSID (phone hotspot, 2.4 GHz)"
+    default "your-ssid"
+    depends on FLY_LINK_ENABLE
+    help
+        The default is a placeholder on purpose: set your own hotspot name with
+        `idf.py menuconfig` (or edit sdkconfig). The ESP32-S31 radio is 2.4 GHz
+        only, so the hotspot must be on a 2.4 GHz band (on iOS that is the
+        "maximum compatibility" switch). The board retries forever, so switching
+        the hotspot on after boot is fine.
+
+config FLY_WIFI_PASSWORD
+    string "Wi-Fi password"
+    default "your-wifi-password"
+    depends on FLY_LINK_ENABLE
+    help
+        The default is a placeholder on purpose: set your own 2.4 GHz hotspot
+        credentials with `idf.py menuconfig` (or edit sdkconfig). An EMPTY
+        password silently fails on any WPA2 access point: the driver retries
+        forever with no credentials, and the symptom is indistinguishable from
+        the hotspot being off. Leave this empty only for a genuinely open
+        network.
+
+config FLY_WIFI_TIMEOUT_SEC
+    int "Per-attempt association timeout (seconds)"
+    range 5 120
+    default 20
+    depends on FLY_LINK_ENABLE
+
+config FLY_WIFI_RETRY_SEC
+    int "Seconds between association attempts"
+    range 1 300
+    default 10
+    depends on FLY_LINK_ENABLE
+    help
+        How long to wait before retrying after a failed attempt. Lower this while
+        commissioning a hotspot (5 s feels responsive); raise it for a permanent
+        install so a hotspot that is off for hours does not keep the radio busy.
+
+config FLY_MIC_GAIN_DB
+    int "Microphone input gain (dB)"
+    range 0 50
+    default 30
+    depends on FLY_LINK_ENABLE
+    help
+        Task A measured a -44.7 dBFS noise floor at 30 dB gain in a quiet room
+        and a clean band ordering (-60.4 / -71.6 / -73.0 dBFS) at that setting.
+        The cloud's dose-response split sits between about -48 and -36 dBFS, so
+        30 dB places the room floor and music on opposite sides of it.
+
+        >>> FIRST-HARDWARE-RUN WARNING (2026-10-06): at 30 dB the room floor
+        >>> already reached -31.8 dBFS, and the orchestrator's
+        >>> level01 = (rms - GATE_DB)/GATE_SPAN saturates at 1.00 once rms
+        >>> reaches -28 dBFS. The result was a fly that escaped continuously in
+        >>> silence (aud 1.00, esc 80+ on the board with nothing playing).
+        >>> Read the new "上行电平 rms=... dBFS" line in the log, then either
+        >>> lower this gain or raise the cloud's GATE_DB / GATE_SPAN so the
+        >>> quiet room lands near 0.1 and music lands near 1.0.
+
+config FLY_IMU_ENABLE
+    bool "Read the BMI270 for steering (accel[0])"
+    default y
+    depends on FLY_LINK_ENABLE
+    help
+        The v4 subcircuit's LEFT/RIGHT (DNa) neurons have no named sensory
+        input, so the board must supply the signed sideways acceleration
+        directly - a cloud round trip is ~100 ms, far too slow for a balance
+        reflex (design doc 0.5).
+
+        Off = accel[0] stays 0 and the fly never steers, which is the right
+        choice when the board is mounted in a fixed enclosure.
+
+endmenu

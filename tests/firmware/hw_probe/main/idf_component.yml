@@ -1,0 +1,11 @@
+dependencies:
+  idf: ">=6.2"
+  esp-mosaico-bsp:
+    version: "*"
+    override_path: ../../../../submodule/esp-mosaico-bsp/components/esp-mosaico-bsp
+  esp_iris:
+    version: "*"
+    override_path: ../../../../submodule/esp-mosaico-utils/ESP-Iris/components/esp_iris
+  lvgl/lvgl:
+    # esp_lvgl_adapter 0.6.2 uses headers deprecated by LVGL 9.6.
+    version: "==9.5.0"

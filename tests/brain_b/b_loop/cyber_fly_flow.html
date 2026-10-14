@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyber-Fly · 果蝇脑机闭环架构流程图</title>
+<style>
+  :root{
+    --bg:#f7f9fc; --card:#ffffff; --ink:#1f2a37; --sub:#5b6675;
+    --sensor:#fef3c7; --sensorB:#d97706;
+    --edge:#dbeafe;   --edgeB:#2563eb;
+    --relay:#e0e7ff;  --relayB:#4f46e5;
+    --brain:#dcfce7;  --brainB:#16a34a;
+    --diag:#fae8ff;   --diagB:#a21caf;
+    --dash:#ffe4e6;   --dashB:#e11d48;
+    --loop:#0ea5e9;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.6}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 60px}
+  h1{font-size:26px;margin:0 0 4px}
+  .lead{color:var(--sub);margin:0 0 22px;font-size:15px}
+  .card{background:var(--card);border:1px solid #e5e9f0;border-radius:14px;
+        padding:18px 20px;margin:18px 0;box-shadow:0 1px 3px rgba(20,30,50,.05)}
+  .card h2{font-size:18px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+  .tag{font-size:12px;color:#fff;background:#0ea5e9;border-radius:6px;padding:2px 8px;font-weight:600}
+  svg{width:100%;height:auto;display:block}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #eef1f6;vertical-align:top}
+  th{background:#f1f5f9;color:var(--sub);font-weight:600}
+  code{background:#f1f5f9;padding:1px 6px;border-radius:5px;font-size:13px}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:6px}
+  .legend span{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--sub)}
+  .sw{width:16px;height:16px;border-radius:4px;display:inline-block;border:2px solid}
+  .foot{color:var(--sub);font-size:13px;margin-top:10px}
+  .note{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:10px;
+        padding:10px 14px;font-size:13px;margin-top:14px}
+  a{color:#2563eb}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Cyber-Fly · 果蝇脑机闭环架构</h1>
+  <p class="lead">云端连接组大脑（果蝇全脑连接组启发）+ 边缘 ESP32（脑干/脊髓层）。下面一张图讲清「感知 → 上行 → 中枢决策 → 下行 → 执行」的闭环，以及每块在生物意义上的对应。</p>
+
+  <div class="card" style="background:#f0f9ff;border-color:#bae6fd">
+    <h2>🎤 讲解串场建议（开场 → 理论 → 落到本项目）</h2>
+    <ol style="font-size:14px;margin:0;padding-left:20px;line-height:1.95">
+      <li><b>抛问题开场</b>：一只果蝇怎么在约 100 毫秒内"看到"危险、决定逃跑、并转向逃走？它的"脑"到底怎么接线？</li>
+      <li><b>给理论地基</b>（看 ④）：连接组学 + 分层脑模型 + 命令神经元 + 发放率编码 + 闭环控制。</li>
+      <li><b>看真实参考项目</b>（看 ⑤）：FlyWire 全脑连接组、DelFly Nimble 逃逸机器人、RoboBee 等，说明"这事学界真在做"。</li>
+      <li><b>翻参考文献</b>（看 ⑥）：主参考即 2024 Nature 全脑连接组，给听众可查的出处。</li>
+      <li><b>落到我们项目</b>：用 ① 架构图 + ⑦ 工作区对照，说明 Cyber-Fly 如何用"ESP32 脑干层 + 云端连接组大脑"把上面理论工程化。</li>
+      <li><b>收尾</b>：看 ⑧ 当前部署状态，证明系统已跑通、数据已闭环。</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>① 系统闭环流程图 <span class="tag">双击本页即可查看</span></h2>
+    <svg viewBox="0 0 1000 820" role="img" aria-label="果蝇脑机闭环架构图">
+      <defs>
+        <marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#334155"/>
+        </marker>
+        <marker id="arl" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#0ea5e9"/>
+        </marker>
+        <style>
+          .box{rx:12;ry:12;stroke-width:2.5}
+          .t{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#1f2a37}
+          .tt{font-size:15px;font-weight:700}
+          .ts{font-size:11.5px;fill:#475569}
+          .lab{font-size:12px;fill:#334155;font-weight:600}
+          .edge{stroke:#334155;stroke-width:2;fill:none}
+          .loop{stroke:#0ea5e9;stroke-width:2.5;fill:none;stroke-dasharray:7 5}
+        </style>
+      </defs>
+
+      <!-- ===== Sensors ===== -->
+      <g>
+        <rect class="box" x="60"  y="30" width="260" height="64" fill="#fef3c7" stroke="#d97706"/>
+        <text class="t tt" x="190" y="58" text-anchor="middle">麦克风 · 听觉输入</text>
+        <text class="t ts" x="190" y="78" text-anchor="middle">声音 / 巨响 / 语音</text>
+
+        <rect class="box" x="370" y="30" width="260" height="64" fill="#fef3c7" stroke="#d97706"/>
+        <text class="t tt" x="500" y="58" text-anchor="middle">IMU · 运动 / 姿态</text>
+        <text class="t ts" x="500" y="78" text-anchor="middle">加速度 / 角速度</text>
+
+        <rect class="box" x="680" y="30" width="260" height="64" fill="#fef3c7" stroke="#d97706"/>
+        <text class="t tt" x="810" y="58" text-anchor="middle">光 / 温湿度 · 其它感官</text>
+        <text class="t ts" x="810" y="78" text-anchor="middle">环境感觉</text>
+      </g>
+
+      <!-- ===== ESP32 ===== -->
+      <rect class="box" x="340" y="150" width="320" height="88" fill="#dbeafe" stroke="#2563eb"/>
+      <text class="t tt" x="500" y="182" text-anchor="middle">ESP32 板子 — 脑干 / 脊髓层</text>
+      <text class="t ts" x="500" y="204" text-anchor="middle">采集传感 → 上行 UDP</text>
+      <text class="t ts" x="500" y="222" text-anchor="middle">接收指令 → 驱动执行器（振翅/转向/移动）</text>
+
+      <!-- ===== relay ===== -->
+      <rect class="box" x="340" y="296" width="320" height="76" fill="#e0e7ff" stroke="#4f46e5"/>
+      <text class="t tt" x="500" y="324" text-anchor="middle">relay.js — UDP 中继</text>
+      <text class="t ts" x="500" y="345" text-anchor="middle">入 33333 → 分发</text>
+      <text class="t ts" x="500" y="362" text-anchor="middle">主脑 33335 ｜ 诊断副本 33336</text>
+
+      <!-- ===== stage1 ===== -->
+      <rect class="box" x="50" y="448" width="400" height="120" fill="#dcfce7" stroke="#16a34a"/>
+      <text class="t tt" x="250" y="476" text-anchor="middle">stage1_loop.js — 连接组大脑（中枢）</text>
+      <text class="t ts" x="68" y="498">主脑：EMA 低通 + 行为判定 → cmd.flags</text>
+      <text class="t ts" x="68" y="518">影子脑：250ms 采 38 组发放率</text>
+      <text class="t ts" x="68" y="538">→ 聚合为 9 大功能区 regions</text>
+      <text class="t ts" x="68" y="558">只读接口 --api 33338</text>
+
+      <!-- ===== watch2 ===== -->
+      <rect class="box" x="550" y="448" width="400" height="120" fill="#fae8ff" stroke="#a21caf"/>
+      <text class="t tt" x="750" y="476" text-anchor="middle">fly_watch2.js — 诊断转发</text>
+      <text class="t ts" x="568" y="498">rms / low / mid / high（声压）</text>
+      <text class="t ts" x="568" y="518">侧向 / 起始 / 门限（运动学）</text>
+      <text class="t ts" x="568" y="538">音频健康评估 audioHealth</text>
+      <text class="t ts" x="568" y="558">只读接口 33340</text>
+
+      <!-- ===== dashboard ===== -->
+      <rect class="box" x="50" y="628" width="900" height="160" fill="#ffe4e6" stroke="#e11d48"/>
+      <text class="t tt" x="500" y="656" text-anchor="middle">fly_dashboard.js — 8080 网页看板（单一服务：页面 + 代理脑侧 API）</text>
+      <text class="t ts" x="70" y="682">右上 1/4 · 数据汇报：行为状态 / 逃逸强度 / 转向 / 振翅 + 最活跃组</text>
+      <text class="t ts" x="70" y="704">左下 1/4 · 脑区神经图：9 大功能区按发放率上色，激活时发光（逃逸旗亮 ⟺ 逃逸区亮）</text>
+      <text class="t ts" x="70" y="726">中部 · 神经活动曲线 + 上行特征表（听觉/梳理/侧向/起始/门限）</text>
+      <text class="t ts" x="70" y="768" style="fill:#be123c">来源：BRAIN_API 33338（regions/groups/cmd）＋ DIAG_API 33340（audio/lat/onset/level/rms）</text>
+
+      <!-- ===== Arrows ===== -->
+      <!-- sensors -> ESP32 -->
+      <path class="edge" marker-end="url(#ar)" d="M190,94 L190,146"/>
+      <path class="edge" marker-end="url(#ar)" d="M500,94 L500,146"/>
+      <path class="edge" marker-end="url(#ar)" d="M810,94 L810,146"/>
+      <text class="lab" x="500" y="124" text-anchor="middle">上行感知</text>
+
+      <!-- ESP32 -> relay -->
+      <path class="edge" marker-end="url(#ar)" d="M500,238 L500,292"/>
+      <text class="lab" x="512" y="270" text-anchor="start">UDP 33333</text>
+
+      <!-- relay -> stage1 -->
+      <path class="edge" marker-end="url(#ar)" d="M400,372 C320,410 300,420 270,444"/>
+      <text class="lab" x="318" y="404" text-anchor="middle">UDP 33335</text>
+      <!-- relay -> watch2 -->
+      <path class="edge" marker-end="url(#ar)" d="M600,372 C690,410 700,420 740,444"/>
+      <text class="lab" x="690" y="404" text-anchor="middle">UDP 33336</text>
+
+      <!-- stage1 -> dashboard -->
+      <path class="edge" marker-end="url(#ar)" d="M250,568 L250,624"/>
+      <text class="lab" x="262" y="602" text-anchor="start">HTTP 33338 /api</text>
+      <!-- watch2 -> dashboard -->
+      <path class="edge" marker-end="url(#ar)" d="M750,568 L750,624"/>
+      <text class="lab" x="762" y="602" text-anchor="start">HTTP 33340 /api</text>
+
+      <!-- CLOSED LOOP: stage1 -> ESP32 (downlink) -->
+      <path class="loop" marker-end="url(#arl)" d="M50,508 C20,430 20,330 320,240"/>
+      <text class="lab" x="40" y="400" fill="#0ea5e9">下行指令 cmd.flags</text>
+      <text class="lab" x="40" y="418" fill="#0ea5e9">（逃逸/转向/梳理/进食）</text>
+
+      <!-- embodied feedback: ESP32 -> sensors (dashed) -->
+      <path class="loop" marker-end="url(#arl)" d="M660,194 C820,150 900,110 820,94"/>
+      <text class="lab" x="800" y="138" fill="#0ea5e9">执行 → 行为 → 环境反馈</text>
+    </svg>
+
+    <div class="legend">
+      <span><i class="sw" style="background:#fef3c7;border-color:#d97706"></i>传感层（外周感觉器官）</span>
+      <span><i class="sw" style="background:#dbeafe;border-color:#2563eb"></i>ESP32（脑干 / 脊髓层）</span>
+      <span><i class="sw" style="background:#e0e7ff;border-color:#4f46e5"></i>relay（上行中继）</span>
+      <span><i class="sw" style="background:#dcfce7;border-color:#16a34a"></i>stage1（连接组大脑）</span>
+      <span><i class="sw" style="background:#fae8ff;border-color:#a21caf"></i>watch2（诊断）</span>
+      <span><i class="sw" style="background:#ffe4e6;border-color:#e11d48"></i>dashboard（看板）</span>
+      <span><i class="sw" style="background:#fff;border-color:#0ea5e9"></i>蓝色虚线 = 闭环（下行指令 / 行为反馈）</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>② 生物映射（参考 2024 Nature 果蝇全脑连接组）</h2>
+    <table>
+      <thead><tr><th>系统组件</th><th>生物对应</th><th>Nature 2024 连接组依据</th></tr></thead>
+      <tbody>
+        <tr><td>麦克风 / IMU / 光温湿度</td><td>外周感觉器官（听觉、机械感觉、视觉、嗅觉）</td><td>输入来自约 3/4 为感觉神经元；全脑 ~13 万神经元中感觉层是上行通路起点</td></tr>
+        <tr><td>ESP32 板子</td><td>脑干 / 脊髓层（反射、运动执行、外周-中枢接口）</td><td>对应低级运动与反射回路，把中枢指令转成肌肉/振翅输出</td></tr>
+        <tr><td>relay.js</td><td>突触 / 轴突束（上行传导）</td><td>连接组里由感觉区到中枢的投射通路；一入多出即"轴突分支"</td></tr>
+        <tr><td>stage1_loop（主脑 EMA + cmd.flags）</td><td>中枢决策核团（如上胸神经节/脑部决策区）</td><td>行为选择来自脑内环路整合；flags 对应逃逸/转向/梳理/进食等离散行为</td></tr>
+        <tr><td>stage1_loop（影子脑发放率 → 9 区）</td><td>全脑功能区（按连接组划分的 9 大模块）</td><td>2024 全脑连接组把神经元聚类为功能模块；这里取区内最大发放率代表激活</td></tr>
+        <tr><td>fly_watch2（诊断）</td><td>辅助感觉评估 / 健康监控（如听觉门控）</td><td>对应感觉门控与注意力机制；监控声音/运动是否"真有信号"</td></tr>
+        <tr><td>fly_dashboard（看板）</td><td>观察者视角（研究者看哪块神经被激活）</td><td>把连接组激活模式可视化，等价论文里的"脑区激活图"</td></tr>
+      </tbody>
+    </table>
+    <p class="foot">主参考：Dorkenwald S., Matsliah A., Sterling A. R., Schlegel P., … (The FlyWire Consortium), Seung H. S., Murthy M. <strong>“Neuronal wiring diagram of an adult brain.”</strong> <em>Nature</em> 634, 124–138 (2024), DOI 10.1038/s41586-024-07558-y（全脑 139,255 个神经元、约 5×10⁷ 个化学突触的完整连接组）。本项目的"9 大功能区 / 行为 flags"是受该连接组启发的功能级近似，非逐神经元复刻。</p>
+  </div>
+
+  <div class="card">
+    <h2>③ 数据流闭环（一句话版）</h2>
+    <p style="font-size:14px;margin:0 0 8px">
+      <code>麦克风/IMU</code> → <code>ESP32</code> 打包 UDP:33333 → <code>relay</code> 复制分发 →
+      <code>stage1_loop</code>(UDP:33335) 算行为指令与 9 区发放率，<code>fly_watch2</code>(UDP:33336) 算音频/运动诊断 →
+      两者各开只读 HTTP（<code>33338</code> / <code>33340</code>）→ <code>fly_dashboard</code>(:8080) 合并渲染 →
+      顶部判定由 <code>cmd.flags</code> 优先派生，脑区图按「发放率 OR 行为旗」点亮 →
+      <code>cmd.flags</code> 经下行回 <code>ESP32</code> 驱动振翅/转向，完成闭环。
+    </p>
+    <p class="foot">两个时钟、两套脑：主脑（EMA 行为判定）与影子脑（250ms 发放率采样）独立运行，因此历史上出现过"脑区图不发光却显示逃逸"的矛盾——已通过「行为旗也点亮对应脑区」修复。</p>
+  </div>
+
+  <div class="card">
+    <h2>④ 理论参考（架构的理论地基）</h2>
+    <table>
+      <thead><tr><th>理论 / 概念</th><th>本项目的对应实现</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>连接组学（Connectomics）</td><td>"9 大功能区 + 行为 flags"</td><td>把脑当"接线图"（神经元 + 突触）。Nature 2024 给出全脑接线图；本项目做功能级近似，不逐神经元复刻。</td></tr>
+        <tr><td>分层脑模型（外周—脑干/脊髓—中枢）</td><td>ESP32 =  brainstem / 脊髓层；云端 = 中枢</td><td>生物上感觉/运动在外周与低级中枢，复杂决策在高级中枢。本项目把采集/执行下沉到板子，决策上云。</td></tr>
+        <tr><td>命令 / 下行神经元（Command neurons）</td><td><code>cmd.flags</code>（EMA 行为判定）</td><td>一小群神经元把"逃逸/转向"等离散决策变成下行指令驱动肌肉；flags 即这一"命令信号"。</td></tr>
+        <tr><td>发放率编码 + EMA 低通</td><td>38 组发放率 / 9 区最大发放率</td><td>神经活动常用"放电频率"表达；EMA 是简单低通 / 状态估计，平滑传感与行为。</td></tr>
+        <tr><td>闭环感觉运动控制（Embodied control）</td><td>蓝色虚线闭环</td><td>感知 → 中枢 → 动作 → 环境反馈 → 再感知；本项目用下行指令 cmd.flags 完成闭环。</td></tr>
+        <tr><td>中央复合体 / 蘑菇体（生物原型）</td><td>9 区中的"导航/学习"相关区</td><td>果蝇中央复合体主管导航定向、蘑菇体主管学习记忆，是"行为选择"与"记忆"的生物原型（灵感来源，非复刻）。</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>⑤ 参考项目（真实存在、可对标）</h2>
+    <table>
+      <thead><tr><th>项目</th><th>机构 / 团队</th><th>与本项目的关联</th></tr></thead>
+      <tbody>
+        <tr><td>FlyWire 全脑连接组平台</td><td>Princeton（Seung 组）+ Janelia（Murthy、Bock）</td><td>2024 Nature 那篇全脑连接组的重建平台，是本项目"连接组大脑"概念的直接来源；可交互浏览 13.9 万神经元接线。</td></tr>
+        <tr><td>hemibrain（果蝇中枢脑部分连接组）</td><td>Janelia（Scheffer et al., 2020, eLife）</td><td>里程碑式的部分连接组（约 2.5 万神经元），neuPrint 可在线浏览；连接组研究的工程基础。</td></tr>
+        <tr><td>DelFly Nimble（果蝇启发扑翼机器人）</td><td>TU Delft MAVLab（Karásek、de Croon、Muijres）</td><td>研究果蝇"逃逸机动"（banked turns）的敏捷飞行机器人，证明昆虫逃逸控制可被工程复现——直接呼应本项目"逃逸"行为。</td></tr>
+        <tr><td>RoboBee（昆虫尺度微飞行机器人）</td><td>Harvard（Wood 组）</td><td>80 mg 级受控飞行机器人（Science 2013），微尺度飞行与驱动的代表。</td></tr>
+        <tr><td>DragonflEye（光遗传控制活体蜻蜓）</td><td>Draper + HHMI</td><td>用光遗传学直接驱动活体蜻蜓飞行，是"脑—机—生物体"闭环的极端例子。</td></tr>
+        <tr><td>数据 / 工具平台</td><td>neuPrint、Virtual Fly Brain、FlyBase</td><td>连接组浏览器与果蝇神经解剖/基因数据库，本项目做生物映射时的查证来源。</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>⑥ 参考文献</h2>
+    <ol style="font-size:13.5px;line-height:1.9;margin:0;padding-left:22px">
+      <li>Dorkenwald S., Matsliah A., Sterling A. R., Schlegel P., Yu S., McKellar C. E., … (The FlyWire Consortium), Seung H. S., Murthy M. <em>“Neuronal wiring diagram of an adult brain.”</em> <strong>Nature</strong> 634, 124–138 (2024). DOI: <a href="https://doi.org/10.1038/s41586-024-07558-y" target="_blank">10.1038/s41586-024-07558-y</a>. <b>［主参考，已核对］</b></li>
+      <li>Scheffer L. K., et al. <em>“A connectome and analysis of the adult Drosophila central brain.”</em> <strong>eLife</strong> 9:e57443 (2020).（hemibrain 部分连接组）</li>
+      <li>Winding M., Pedigo B. D., et al. <em>“The connectome of the larval Drosophila brain.”</em> <strong>Science</strong> 375:eabm9287 (2022).（幼虫全脑连接组）</li>
+      <li>Karásek M., Muijres F. T., de Croon G. C. H. <em>“A tailless aerial robotic flapping flyer that can transition from hovering to fast forward flight.”</em> <strong>Science</strong> 361, 1089–1094 (2018).（DelFly Nimble）</li>
+      <li>Ma K. Y., Chirarattananon P., Fuller S. B., Wood R. J. <em>“Controlled flight of a biologically inspired, insect-scale robot.”</em> <strong>Science</strong> 340, 603–607 (2013).（RoboBee）</li>
+      <li>Card G. M. <em>“Escape behaviors in insects.”</em> <strong>Current Opinion in Neurobiology</strong> 22(2):200–207 (2012).（昆虫逃逸行为综述）</li>
+      <li>Hulse B. K., Haberkern H., Franconville R., et al. <em>“A connectome of the Drosophila central complex reveals functionally distinct circuits for innate and learned visuomotor behaviors.”</em> <strong>eLife</strong> (2021).（导航 / 定向回路）</li>
+    </ol>
+    <p class="foot">说明：条目 1 经检索核对（Nature 2024，139,255 神经元、约 5×10⁷ 化学突触）；其余为连接组 / 仿生飞行 / 昆虫神经行为领域的经典或代表性文献，建议在正式文稿中按目标期刊格式再统一校对 DOI 与页码。</p>
+  </div>
+
+  <div class="card">
+    <h2>⑦ 工作区对照（文件 ↔ 架构 ↔ 生物 ↔ 部署位置）</h2>
+    <table>
+      <thead><tr><th>本地文件 / 云端目录</th><th>架构角色</th><th>生物对应</th><th>端口 / 备注</th></tr></thead>
+      <tbody>
+        <tr><td><code>relay.js</code>（/root/tcw）</td><td>UDP 上行中继</td><td>突触 / 轴突束（上行传导）</td><td>入 33333 → 33335 / 33336</td></tr>
+        <tr><td><code>stage1_loop.js</code>（/root/b_loop）</td><td>连接组大脑（主脑 + 影子脑）</td><td>中枢决策核团 / 全脑功能区</td><td>--api 33338；含 <code>add_regions.py</code> 9 区聚合补丁</td></tr>
+        <tr><td><code>fly_watch2.js</code>（/root/tcw）</td><td>诊断转发</td><td>辅助感觉评估 / 听觉门控</td><td>UDP 33336 → HTTP 33340</td></tr>
+        <tr><td><code>fly_dashboard.js</code>（/root/tdash）</td><td>8080 网页看板</td><td>观察者视角（激活可视化）</td><td>:8080；合并 33338 + 33340</td></tr>
+        <tr><td>ESP32 固件（esp-mosaico）</td><td>脑干 / 脊髓层</td><td>反射、运动执行、外周-中枢接口</td><td>本地工程 <code>esp-mosaico-vibe</code></td></tr>
+      </tbody>
+    </table>
+    <p class="foot">本地工作区：<code>D:\ESP\esp-mosaico-vibe\tests\brain_b\b_loop\</code>；云端：<code>/root/tdash</code>（看板）、<code>/root/tcw</code>（relay + watch2）、<code>/root/b_loop</code>（stage1）。四进程闭环：ESP32 --UDP 33333--> relay --> stage1(33335) + watch2(33336)；看板 8080 从 33338 / 33340 取数，cmd.flags 下行回 ESP32。</p>
+  </div>
+
+  <div class="card">
+    <h2>⑧ 部署状态（截至本次核对 · 附录）</h2>
+    <table>
+      <thead><tr><th>检查项</th><th>结果</th></tr></thead>
+      <tbody>
+        <tr><td>端口监听</td><td>8080（看板）· 33338（脑 API）· 33340（诊断）全部 OK</td></tr>
+        <tr><td>上行特征到达 8080</td><td>已修复：audio / jo / lat / onset / level / rms·low·mid·high 全部出现在 /api</td></tr>
+        <tr><td>脑区图 vs 逃逸一致</td><td>已修复：逃逸旗亮 ⟺ 逃逸区亮（hz≥2 或 行为旗）</td></tr>
+        <tr><td>源码一致性</td><td>云端 fly_dashboard.js = 本地 893857fb…；fly_watch2.js = 本地 0bfd5767…</td></tr>
+      </tbody>
+    </table>
+    <div class="note">⚠️ 之前 8080 看不到「听觉/梳理/侧向/起始/门限/上行特征」的根因：fly_watch2 的诊断 HTTP 原本想绑 8080，被看板占用导致绑定失败——算好的字段无处可出。已将诊断口改到 33340，看板 DIAG_API 默认指向它，前端合并 lastDiag 字段，问题消除。</div>
+  </div>
+</div>
+</body>
+</html>
