@@ -1,9 +1,10 @@
 # cyber_fly
 
-A thin fork of `projects/desktop_pet` that renders a **cyber fly** on the
+A project in the ESP-Mosaico workspace that renders a **cyber fly** on the
 ESP-Mosaico 480×480 CO5300 LCD, driven by the **32-byte MPRC brain downlink
-frame** (see `tests/brain_b/STAGE1-SENSOR-TO-BRAIN-DESIGN.md` §3) instead of
-virtual-pet stats.
+frame**. The frame layout is defined in §3 of the cloud-brain design doc, which
+lives in the sibling repository
+[cyber-fly-brain](https://github.com/snownmouse/cyber-fly-brain).
 
 **Status (2026-10-06): the real closed loop runs on hardware.** The board
 associates to a phone hotspot, opens the ES8311 microphone, streams a 68-byte
@@ -106,8 +107,9 @@ Two negative tests confirm the checks are real, not decorative:
 | flip one bit of `turn` (offset 16) | rejected | rejected by CRC (`-7`) |
 | flip one bit of `magic` (offset 0) | rejected | rejected by magic (`-3`) |
 
-Full transcript: `tests/brain_b/b_loop/interop-mprc-raw.txt`.
-Source: `tests/brain_b/b_loop/verify_mprc.c`.
+Full transcript: the `interop-mprc-raw.txt` run record produced on the cloud box
+(a local artifact, not versioned).
+Source: [`tests/host/verify_mprc.c`](tests/host/verify_mprc.c).
 
 Note the escape frames carry `turn = 0` and the bump frames carry `flags = 0x02` with no
 escape — **escape and steering are separate in time**, because steering comes from the IMU
@@ -198,7 +200,7 @@ password, so the cause is in the log rather than something you have to infer.
 
 ### Host-side verification (no hardware needed)
 
-`tests/brain_b/b_loop/verify_hostcheck.c` — **23/23 pass**, `gcc -Wall -Wextra`
+`tests/host/verify_hostcheck.c` — **23/23 pass**, `gcc -Wall -Wextra`
 zero warnings. It pins the behaviour the board depends on:
 
 - a silent (or `mic == NULL`) MPRB is still a **valid** frame: magic, type,
@@ -214,13 +216,13 @@ Run it with any host compiler:
 
 ```sh
 gcc -std=c11 -O2 -Wall -Wextra -I projects/cyber_fly/main \
-    -o hostcheck tests/brain_b/b_loop/verify_hostcheck.c \
+    -o hostcheck tests/host/verify_hostcheck.c \
     projects/cyber_fly/main/fly_link.c projects/cyber_fly/main/fly_game.c -lm
 ./hostcheck
 ```
 
-`verify_fly_link.c` additionally replays the orchestrator's real
-`downlink_10s.bin` (200 frames) and now emits MPRB frames carrying **distinct**
+`verify_fly_link.c` additionally replays the orchestrator's recorded
+`downlink_10s.bin` (200 frames, captured on the cloud box) and now emits MPRB frames carrying **distinct**
 per-band levels, asserting each lands at its own offset — the old placeholder
 filled all three bands with one value, which made the cloud's band→neuron
 mapping impossible to test.

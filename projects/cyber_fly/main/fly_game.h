@@ -16,7 +16,7 @@
 #define FLY_FLAG_FEED   (1u << 4)  // feeding (MN9)
 #define FLY_FLAG_ESTOP  (1u << 5)  // emergency stop
 
-// Fixed MPRC wire layout (must match tests/brain_b STAGE1 design, section 3).
+// Fixed MPRC wire layout (must match the cloud-brain STAGE1 design, section 3).
 #define FLY_MPRC_MAGIC   0x4352504Du  // little-endian bytes 'M','P','R','C'
 #define FLY_MPRC_VERSION 1
 #define FLY_MPRC_TYPE    4

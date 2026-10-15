@@ -4,7 +4,8 @@
 //
 // Transport rationale
 // -------------------
-// The cloud orchestrator (tests/brain_b/b_loop/stage1_loop.js) already answers
+// The cloud orchestrator (stage1_loop.js, in the sibling repository
+// cyber-fly-brain) already answers
 // every MPRB feature frame with an MPRC command frame sent straight back to the
 // sender's observed address:port:
 //
@@ -22,8 +23,8 @@
 //     newest good frame plus link statistics;
 //   * the ESP-IDF UDP task (only when FLY_LINK_ESP_UDP=1) owns the socket.
 //
-// The host harness tests/brain_b/b_loop/verify_fly_link.c compiles the core on the
-// build server and replays the orchestrator's real downlink_10s.bin through it.
+// The host harness tests/host/verify_fly_link.c compiles the core on the
+// build server and replays the orchestrator's recorded downlink_10s.bin through it.
 #pragma once
 
 #include <stdbool.h>
@@ -52,7 +53,7 @@ typedef struct fly_mic_features {
 extern "C" {
 #endif
 
-// Wire constants shared with tests/brain_b (design doc section 3).
+// Wire constants shared with the cloud brain (design doc section 3).
 #define FLY_LINK_MPRB_LEN 68u
 #define FLY_LINK_MPRC_LEN 32u
 #define FLY_LINK_MPRB_MAGIC 0x4D505242u   // little-endian bytes 'M','P','R','B'

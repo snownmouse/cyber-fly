@@ -7,7 +7,11 @@ sensors (microphone + BMI270 IMU) and the real actuators; a fruit-fly connectome
 subcircuit running on a cloud server does the "thinking". The two are wired into a live
 **sense → think → act** loop — a real closed loop, not a simulation and not a desktop pet.
 
-![Cyber-Fly closed-loop architecture](tests/brain_b/b_loop/cyber_fly_flow.svg)
+![Cyber-Fly closed-loop architecture](https://raw.githubusercontent.com/snownmouse/cyber-fly-brain/main/brain_b/b_loop/cyber_fly_flow.svg)
+
+> The cloud brain lives in its own repository:
+> **[snownmouse/cyber-fly-brain](https://github.com/snownmouse/cyber-fly-brain)**.
+> This repository is the board side — firmware, the bench probe and the hardware docs.
 
 ## The idea: a biological mapping
 
@@ -57,10 +61,12 @@ MPRC command that comes back.
 | Path | What it is |
 | --- | --- |
 | `projects/cyber_fly/` | Onboard firmware — the fly body (`main/` = 22 source files) |
-| `tests/brain_b/` | The cloud brain: `stage1_loop.js`, `relay.js`, design docs, dashboards |
-| `tests/brain_c/` | Presentation and data-architecture notes |
+| `tests/host/` | Host harnesses that compile the board sources and check the wire protocol |
 | `tests/firmware/hw_probe/` | Bench probe — the board facts everything else is built on |
 | `docs/hardware-interface-checklist.md` | Verified board interface (SoC, I2C addresses, codec, power-up order) |
+
+The cloud side — the stage-1 orchestrator, the relay, the dashboards and their design docs —
+lives in **[snownmouse/cyber-fly-brain](https://github.com/snownmouse/cyber-fly-brain)**.
 
 ## Quick start
 
@@ -80,9 +86,14 @@ check are all documented in **[projects/cyber_fly/README.md](projects/cyber_fly/
 ## Documentation
 
 - [projects/cyber_fly/README.md](projects/cyber_fly/README.md) — firmware deep dive
-- [tests/brain_b/STAGE1-SENSOR-TO-BRAIN-DESIGN.md](tests/brain_b/STAGE1-SENSOR-TO-BRAIN-DESIGN.md) — sensor → brain → command design
-- [tests/brain_b/b_loop/cyber_fly_brief.md](tests/brain_b/b_loop/cyber_fly_brief.md) — project walkthrough (中文)
-- [tests/brain_b/b_loop/cyber_fly_intro.html](tests/brain_b/b_loop/cyber_fly_intro.html) — visual introduction
+- [docs/hardware-interface-checklist.md](docs/hardware-interface-checklist.md) — verified board interface
+- [tests/firmware/hw_probe/README.md](tests/firmware/hw_probe/README.md) — bench probe
+
+Cloud side, in [cyber-fly-brain](https://github.com/snownmouse/cyber-fly-brain):
+
+- [STAGE1-SENSOR-TO-BRAIN-DESIGN.md](https://github.com/snownmouse/cyber-fly-brain/blob/main/brain_b/STAGE1-SENSOR-TO-BRAIN-DESIGN.md) — sensor → brain → command design
+- [cyber_fly_brief.md](https://github.com/snownmouse/cyber-fly-brain/blob/main/brain_b/b_loop/cyber_fly_brief.md) — project walkthrough (中文)
+- [cyber_fly_intro.html](https://github.com/snownmouse/cyber-fly-brain/blob/main/brain_b/b_loop/cyber_fly_intro.html) — visual introduction
 
 ## Background
 
@@ -98,4 +109,12 @@ simulation of all ~140,000 cells.
 The board firmware and host simulator run inside the **ESP-Mosaico Vibe** workspace for the
 Espressif ESP32-S3 toolchain (CLI entry `mosaico.py`, pinned ESP-IDF, BSP and the Raylib
 Lite Engine). That framework's own documentation is unchanged and lives in
-[`docs/`](docs/README.md) and [`AGENTS.md`](AGENTS.md).
+[`docs/`](docs/README.md) and [`AGENTS.md`](AGENTS.md). The framework code is included here
+as-is so the firmware can be built; it remains the property of its authors.
+
+## Licence
+
+Our own code — the firmware under `projects/cyber_fly/`, the bench probe under
+`tests/firmware/hw_probe/` and the host harnesses under `tests/host/` — is licensed under the
+**Apache License 2.0**; see [LICENSE](LICENSE). The `docs/` framework documentation, the
+submodules and the `mosaico.py` toolchain keep their upstream terms.

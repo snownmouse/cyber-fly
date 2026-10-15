@@ -6,7 +6,10 @@
 （麦克风 + BMI270 IMU）和真实执行器，云端跑一个果蝇连接组子回路负责"思考"——两者接成一个
 **真实的"感知 → 思考 → 行动"闭环**。不是仿真，也不是桌宠。
 
-![cyber_fly 云端连接组闭环](tests/brain_b/b_loop/cyber_fly_flow.svg)
+![cyber_fly 云端连接组闭环](https://raw.githubusercontent.com/snownmouse/cyber-fly-brain/main/brain_b/b_loop/cyber_fly_flow.svg)
+
+> 云端大脑已拆到独立仓库：**[snownmouse/cyber-fly-brain](https://github.com/snownmouse/cyber-fly-brain)**。
+> 本仓库是**板端** —— 固件、台架探针与硬件文档。
 
 ## 核心创意：生物映射
 
@@ -53,10 +56,12 @@
 | 路径 | 内容 |
 | --- | --- |
 | `projects/cyber_fly/` | 板端固件 —— 果蝇的"身体"（`main/` 共 22 个源文件） |
-| `tests/brain_b/` | 云端大脑：`stage1_loop.js`、`relay.js`、设计文档、看板 |
-| `tests/brain_c/` | 汇报与数据架构笔记 |
+| `tests/host/` | host 验证程序 —— 直接编译板端源码，校验线协议 |
 | `tests/firmware/hw_probe/` | 板上探针固件 —— 其余一切所依据的硬件事实 |
 | `docs/hardware-interface-checklist.md` | 已核实的板级接口（SoC / I2C 地址 / codec / 上电顺序） |
+
+云端那半 —— 阶段一编排层、relay、看板及其设计文档 —— 在
+**[snownmouse/cyber-fly-brain](https://github.com/snownmouse/cyber-fly-brain)**。
 
 ## 快速开始
 
@@ -76,9 +81,14 @@ python mosaico.py iris system-update --project projects/cyber_fly
 ## 文档
 
 - [projects/cyber_fly/README.md](projects/cyber_fly/README.md) —— 固件深度解析
-- [tests/brain_b/STAGE1-SENSOR-TO-BRAIN-DESIGN.md](tests/brain_b/STAGE1-SENSOR-TO-BRAIN-DESIGN.md) —— 传感器 → 大脑 → 指令设计
-- [tests/brain_b/b_loop/cyber_fly_brief.md](tests/brain_b/b_loop/cyber_fly_brief.md) —— 项目梳理（中文）
-- [tests/brain_b/b_loop/cyber_fly_intro.html](tests/brain_b/b_loop/cyber_fly_intro.html) —— 可视化介绍
+- [docs/hardware-interface-checklist.md](docs/hardware-interface-checklist.md) —— 已核实的板级接口
+- [tests/firmware/hw_probe/README.md](tests/firmware/hw_probe/README.md) —— 台架探针
+
+云端侧（在 [cyber-fly-brain](https://github.com/snownmouse/cyber-fly-brain)）：
+
+- [STAGE1-SENSOR-TO-BRAIN-DESIGN.md](https://github.com/snownmouse/cyber-fly-brain/blob/main/brain_b/STAGE1-SENSOR-TO-BRAIN-DESIGN.md) —— 传感器 → 大脑 → 指令设计
+- [cyber_fly_brief.md](https://github.com/snownmouse/cyber-fly-brain/blob/main/brain_b/b_loop/cyber_fly_brief.md) —— 项目梳理（中文）
+- [cyber_fly_intro.html](https://github.com/snownmouse/cyber-fly-brain/blob/main/brain_b/b_loop/cyber_fly_intro.html) —— 可视化介绍
 
 ## 参考
 
@@ -91,4 +101,11 @@ python mosaico.py iris system-update --project projects/cyber_fly
 
 板端固件与 host 模拟器运行在 **ESP-Mosaico Vibe** 工作区内（面向乐鑫 ESP32-S3 工具链：
 CLI 入口 `mosaico.py`、固定版本的 ESP-IDF、BSP 与 Raylib Lite Engine）。该框架自身的文档
-原样保留，见 [`docs/`](docs/README_CN.md) 与 [`AGENTS.md`](AGENTS.md)。
+原样保留，见 [`docs/`](docs/README_CN.md) 与 [`AGENTS.md`](AGENTS.md)。框架代码是为构建固件
+而原样收录的，版权仍归其作者所有。
+
+## 许可
+
+我们自己的代码 —— `projects/cyber_fly/` 下的固件、`tests/firmware/hw_probe/` 下的台架探针、
+`tests/host/` 下的 host 验证程序 —— 采用 **Apache License 2.0**，见 [LICENSE](LICENSE)。
+`docs/` 里的框架文档、各 submodule 与 `mosaico.py` 工具链沿用各自上游的条款。
